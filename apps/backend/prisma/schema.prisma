@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Define the enums
+enum ChannelStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ChannelSource {
+  YOUTUBE_IMPORT
+  MANUAL_ADD
+  AI_RECOMMENDED
+}
+
+enum PlaylistSyncStatus {
+  PENDING
+  SYNCED
+  REMOVING
+  REMOVED
+  FAILED
+}
+
+enum RecommendationLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+// Define the user model
+model User {
+  id       String    @id @default(uuid())
+  googleId String   @unique
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+  youtubeAccessToken String
+  youtubeRefreshToken String
+  tokenExpiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userChannels UserChannel[]
+  playlists Playlist[]
+  searchHistories SearchHistory[]
+}
+
+// Define the model channel
+model Channel {
+  id          String     @id @default(uuid())
+  youtubeChannelId String @unique
+  name        String
+  thumbnailUrl String?
+  uploadPlaylistId String
+  lastCheckedAt DateTime?
+  lastVideoPublishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userChannels UserChannel[]
+  videos Video[]
+
+ 
+}
+
+model UserChannel {
+  id        String   @id @default(uuid())
+  source    ChannelSource @default(YOUTUBE_IMPORT)
+  isActive  Boolean  @default(true)
+  addedAt   DateTime @default(now())
+  userId    String
+  user    User    @relation(fields: [userId], references: [id])
+  channelId String
+  channel Channel @relation(fields: [channelId], references: [id])
+ 
+  @@unique([userId, channelId])
+  @@index([userId])
+}
+
+// Define the video model
+model Video {
+  id          String   @id @default(uuid())
+  youtubeVideoId String @unique
+  title       String
+  description String?
+  thumbnailUrl String?
+  durationSeconds Int?
+  publishedAt DateTime
+  detectedAt DateTime @default(now())
+  channelId   String
+  channel     Channel @relation(fields: [channelId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  playlistItems PlaylistItem[]
+}
+
+// Define the playlist model
+model Playlist {
+  id          String   @id @default(uuid())
+  youtubePlaylistId String @unique
+  name        String      
+  isMain     Boolean   @default(true)
+  syncStatus PlaylistSyncStatus @default(PENDING)
+  syncedAt DateTime?
+  totalVideos Int @default(0)
+  unWatchedCount Int @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+  items       PlaylistItem[]
+}
+
+// Define the playlist Item model
+model PlaylistItem {
+  id          String   @id @default(uuid())
+  youtubeItemId String?
+  syncStatus PlaylistSyncStatus @default(PENDING)
+  syncedAt DateTime?
+  watched Boolean @default(false)
+  addedAt DateTime @default(now())  
+  playlistId   String
+  playlist     Playlist @relation(fields: [playlistId], references: [id])
+  videoId      String
+  video        Video    @relation(fields: [videoId], references: [id])
+  watchedAt    DateTime?
+  @@unique([playlistId, videoId])
+  @@index([syncStatus])
+
+}
+
+// Define the search history model
+model SearchHistory {
+  id         String   @id @default(uuid())
+  theme      String
+  results    Json
+  searchedAt DateTime @default(now())
+  expiresAt  DateTime
+  userId                String
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  searchRecommendations SearchRecommendation[]
+
+  @@index([userId, theme])
+}
+
+// Define the search recommendation model
+// model SearchRecommendation {
+//   id         String   @id @default(cuid())
+//   theme      String
+//   results    Json
+//   recommendedAt DateTime @default(now())
+//   searchHistoryId String
+//   searchHistory   SearchHistory @relation(fields: [searchHistoryId], references: [id], onDelete: Cascade)
+//   @@index([searchHistoryId, theme])
+// }
+
+model SearchRecommendation {
+  searchHistoryId         String
+  searchHistory           SearchHistory @relation( fields: [searchHistoryId],references: [id],onDelete: Cascade)
+  channelRecommendationId String
+  channelRecommendation   ChannelRecommendation @relation(fields: [channelRecommendationId],references: [id],onDelete: Cascade)
+  @@id([searchHistoryId, channelRecommendationId])
+}
+
+// Define the channel recommendation model
+model ChannelRecommendation {
+  id          String   @id @default(uuid())
+  theme            String
+  youtubeChannelId String @unique
+  name        String  
+  thumbnailUrl String?
+  subscriberCount  Int?
+   whyRecommended   String
+  pedagogicalStyle String
+  level            RecommendationLevel
+  strengths        String[]
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  searchRecommendations SearchRecommendation[]
+  @@unique([theme, youtubeChannelId])
+  @@index([theme])
+  @@index([expiresAt])
+ 
+}
+
+// Define the model for session management 
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+}
