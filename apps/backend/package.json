@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "server": "node --watch server.js",
+    "worker": "node --watch ./workers/worker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

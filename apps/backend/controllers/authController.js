@@ -17,16 +17,17 @@ export const googleCallback = async (req, res) => {
       await importUserPlaylists(user.youtubeAccessToken, user.id);
     }
     // Redirige vers le dashboard frontend, a faire apres l'implementation du dashboard
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
 
-    res.json({
-      message: 'Connexion réussie',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-      },
-    });
+    // res.json({
+    //   message: 'Connexion réussie',
+    //   user: {
+    //     id: user.id,
+    //     name: user.name,
+    //     email: user.email,
+    //     avatar: user.avatar,
+    //   },
+    // });
 
     console.log(
       'initialisation de playlist et import des abonnements faits apres premiere connexion',
@@ -42,7 +43,9 @@ export const logout = (req, res) => {
       console.error('Erreur lors de la déconnexion:', err);
       return res.status(500).json({ message: 'Erreur lors de la déconnexion' });
     }
-    res.redirect('/');
+
+    res.clearCookie('connect.sid', { path: '/' });
+    res.redirect(`${process.env.FRONTEND_URL}/auth`);
   });
 };
 

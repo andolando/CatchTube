@@ -2,17 +2,8 @@ import { google } from 'googleapis';
 import prisma from '../config/prisma.js';
 
 export const createMainPlaylist = async (accessToken, userId) => {
-  console.log('=== createMainPlaylist ===');
   console.log('userId:', userId);
   console.log('accessToken:', accessToken);
-
-  const test = await fetch(
-    'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=' +
-      accessToken,
-  );
-  const info = await test.json();
-  console.log('=== Token Info ===');
-  console.log(info);
 
   const existingPlaylist = await prisma.playlist.findFirst({
     where: { userId: userId, isMain: true },

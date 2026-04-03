@@ -129,6 +129,8 @@ model PlaylistItem {
   syncedAt DateTime?
   watched Boolean @default(false)
   addedAt DateTime @default(now())  
+  retryCount Int @default(0)
+  lastFailedAt  DateTime?    
   playlistId   String
   playlist     Playlist @relation(fields: [playlistId], references: [id])
   videoId      String
@@ -136,6 +138,7 @@ model PlaylistItem {
   watchedAt    DateTime?
   @@unique([playlistId, videoId])
   @@index([syncStatus])
+  @@index([syncStatus, retryCount])
 
 }
 
