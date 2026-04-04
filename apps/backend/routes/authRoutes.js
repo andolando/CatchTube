@@ -40,7 +40,7 @@ router.get(
   passport.authenticate('google', { failureRedirect: '/' }),
   googleCallback,
 );
-router.get('/logout', logout);
+router.post('/logout', logout);
 router.get('/me', protect, getMe);
 
 export default router;

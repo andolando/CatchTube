@@ -45,7 +45,7 @@ export const logout = (req, res) => {
     }
 
     res.clearCookie('connect.sid', { path: '/' });
-    res.redirect(`${process.env.FRONTEND_URL}/auth`);
+    return res.status(200).json({ message: 'Déconnexion réussie' });
   });
 };
 

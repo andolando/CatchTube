@@ -6,5 +6,4 @@ export const protect = (req, res, next) => {
     error: 'Non authentifié',
     message: 'Vous devez être connecté pour accéder à cette ressource',
   });
-  res.redirect('/auth/google');
 };
