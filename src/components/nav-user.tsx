@@ -1,8 +1,4 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +14,18 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import {
+  ChevronsUpDownIcon,
+  SparklesIcon,
+  BadgeCheckIcon,
+  CreditCardIcon,
+  BellIcon,
+  LogOutIcon,
+} from "lucide-react"
 import type { User } from "@/types"
+import { useMutation } from "@tanstack/react-query"
+import { logout } from "@/api/auth"
+import { useNavigate } from "@tanstack/react-router"
 
 export function NavUser({
   user,
@@ -32,6 +38,19 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
 
+  const navigate = useNavigate()
+
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      navigate({ to: "/auth" })
+    },
+  })
+
+  const handleLogout = () => {
+    logoutMutation.mutate()
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -43,7 +62,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.avatarUrl} alt={user?.name} />
-                <AvatarFallback className="rounded-lg">{`${user?.name?.charAt(0) || 'C'}${user?.name?.split(' ')[1]?.charAt(0) || 'N'}`}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{`${user?.name?.charAt(0) || "C"}${user?.name?.split(" ")[1]?.charAt(0) || "N"}`}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user?.name}</span>
@@ -62,7 +81,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user?.avatarUrl} alt={user?.name} />
-                  <AvatarFallback className="rounded-lg">{`${user?.name?.charAt(0) || 'C'}${user?.name?.split(' ')[1]?.charAt(0) || 'N'}`}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{`${user?.name?.charAt(0) || "C"}${user?.name?.split(" ")[1]?.charAt(0) || "N"}`}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user?.name}</span>
@@ -73,33 +92,28 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <SparklesIcon
-                />
+                <SparklesIcon />
                 Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <BadgeCheckIcon
-                />
+                <BadgeCheckIcon />
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <CreditCardIcon
-                />
+                <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <BellIcon
-                />
+                <BellIcon />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon
-              />
+            <DropdownMenuItem onSelect={handleLogout}>
+              <LogOutIcon />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

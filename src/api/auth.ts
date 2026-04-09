@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios"
 import api from "../lib/axios"
 
 export const logout = async () => {
@@ -9,7 +10,6 @@ export const logout = async () => {
     console.log(error)
     throw error
   }
-
 }
 
 export const getUser = async () => {
@@ -17,9 +17,12 @@ export const getUser = async () => {
     const response = await api.get("/auth/me",{
         withCredentials: true
     })
-    console.log(response.data)
+   
     return response.data
   } catch (error) {
+    if(isAxiosError(error) && error.response?.status === 401) {
+      return null
+    }
     console.log(error)
     throw error
   }
