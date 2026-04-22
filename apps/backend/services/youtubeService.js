@@ -1,20 +1,23 @@
-import { google } from 'googleapis';
-import prisma from '../config/prisma.js';
-import { buildYoutubeClient } from '../config/youtubeClient.js';
+import { google } from "googleapis";
+import prisma from "../config/prisma.js";
+import { buildYoutubeClient } from "../config/youtubeClient.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const MAX_RETRIES = 5;
 
 export const importUserPlaylists = async (accessToken, userId) => {
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
-  const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+  const youtube = google.youtube({ version: "v3", auth: oauth2Client });
 
   let nextPageToken = undefined;
   const allChannels = [];
 
   do {
     const response = await youtube.subscriptions.list({
-      part: ['snippet'],
+      part: ["snippet"],
       mine: true,
       maxResults: 50,
       pageToken: nextPageToken,
@@ -28,7 +31,7 @@ export const importUserPlaylists = async (accessToken, userId) => {
 
     if (channelIds.length > 0) {
       const channelsResponse = await youtube.channels.list({
-        part: ['snippet', 'contentDetails'],
+        part: ["snippet", "contentDetails"],
         id: channelIds,
       });
 
@@ -37,10 +40,10 @@ export const importUserPlaylists = async (accessToken, userId) => {
       channelsData.forEach((channel) => {
         allChannels.push({
           youtubeChannelId: channel.id,
-          name: channel.snippet?.title ?? '',
+          name: channel.snippet?.title ?? "",
           thumbnailUrl: channel.snippet?.thumbnails?.high?.url ?? null,
           uploadPlaylistId:
-            channel.contentDetails?.relatedPlaylists?.uploads ?? '',
+            channel.contentDetails?.relatedPlaylists?.uploads ?? "",
         });
       });
     }
@@ -73,7 +76,7 @@ export const importUserPlaylists = async (accessToken, userId) => {
         create: {
           userId,
           channelId: channel.id,
-          source: 'YOUTUBE_IMPORT',
+          source: "YOUTUBE_IMPORT",
           isActive: true,
         },
       });
@@ -84,7 +87,7 @@ export const importUserPlaylists = async (accessToken, userId) => {
     }
   }
 
-  console.log('Toutes les chaines', allChannels.length);
+  console.log("Toutes les chaines", allChannels.length);
 
   return allChannels.length;
 };
@@ -92,7 +95,7 @@ export const importUserPlaylists = async (accessToken, userId) => {
 // fetch all channels subsribed
 export const fetchNewVideos = async () => {
   try {
-    console.log('Fetching channels with active subscriptions...');
+    console.log("Fetching channels with active subscriptions...");
     const channels = await prisma.channel.findMany({
       where: {
         userChannels: {
@@ -150,7 +153,7 @@ export const fetchNewVideos = async () => {
 
       do {
         const response = await youtube.playlistItems.list({
-          part: ['snippet', 'contentDetails'],
+          part: ["snippet", "contentDetails"],
           playlistId: channel.uploadPlaylistId,
           maxResults: 50,
           pageToken,
@@ -218,7 +221,7 @@ export const fetchNewVideos = async () => {
     //   `Total new videos fetched: ${totalNewVideos} et le process de verification est terminé.`,
     // );
   } catch (error) {
-    console.log('Error fetching new videos:', error);
+    console.log("Error fetching new videos:", error);
     throw error;
   }
 };
@@ -302,11 +305,11 @@ export const addToPlaylist = async () => {
         create: {
           playlistId: playlist.id,
           videoId: video.id,
-          syncStatus: 'PENDING',
+          syncStatus: "PENDING",
         },
       });
 
-      if (playlistItem.syncStatus === 'SYNCED') {
+      if (playlistItem.syncStatus === "SYNCED") {
         continue;
       }
 
@@ -314,12 +317,12 @@ export const addToPlaylist = async () => {
         const youtube = buildYoutubeClient(user);
 
         const response = await youtube.playlistItems.insert({
-          part: ['snippet'],
+          part: ["snippet"],
           requestBody: {
             snippet: {
               playlistId: playlist.youtubePlaylistId,
               resourceId: {
-                kind: 'youtube#video',
+                kind: "youtube#video",
                 videoId: video.youtubeVideoId,
               },
             },
@@ -329,7 +332,7 @@ export const addToPlaylist = async () => {
         await prisma.playlistItem.update({
           where: { id: playlistItem.id },
           data: {
-            syncStatus: 'SYNCED',
+            syncStatus: "SYNCED",
             youtubeItemId: response.data.id,
             syncedAt: new Date(),
           },
@@ -341,7 +344,7 @@ export const addToPlaylist = async () => {
       } catch (err) {
         await prisma.playlistItem.update({
           where: { id: playlistItem.id },
-          data: { syncStatus: 'FAILED' },
+          data: { syncStatus: "FAILED" },
         });
       }
     }
@@ -351,7 +354,7 @@ export const addToPlaylist = async () => {
 export const retryFailedItems = async () => {
   const failedItems = await prisma.playlistItem.findMany({
     where: {
-      syncStatus: 'FAILED',
+      syncStatus: "FAILED",
       retryCount: { lt: MAX_RETRIES },
     },
     select: {
@@ -390,12 +393,12 @@ export const retryFailedItems = async () => {
     try {
       const youtube = buildYoutubeClient(user);
       const response = await youtube.playlistItems.insert({
-        part: ['snippet'],
+        part: ["snippet"],
         requestBody: {
           snippet: {
             playlistId: item.playlist.youtubePlaylistId,
             resourceId: {
-              kind: 'youtube#video',
+              kind: "youtube#video",
               videoId: item.video.youtubeVideoId,
             },
           },
@@ -405,7 +408,7 @@ export const retryFailedItems = async () => {
       await prisma.playlistItem.update({
         where: { id: item.id },
         data: {
-          syncStatus: 'SYNCED',
+          syncStatus: "SYNCED",
           youtubeItemId: response.data.id,
           syncedAt: new Date(),
           retryCount: 0,
@@ -418,7 +421,7 @@ export const retryFailedItems = async () => {
         await prisma.playlistItem.update({
           where: { id: item.id },
           data: {
-            syncStatus: 'REMOVING',
+            syncStatus: "REMOVING",
             retryCount: { increment: 1 },
             lastFailedAt: new Date(),
           },
@@ -435,5 +438,51 @@ export const retryFailedItems = async () => {
         totalFailed++;
       }
     }
+  }
+};
+
+// fetch statistics of channels found by tavily
+export const channelsStats = async (channels) => {
+  try {
+    const stats = [];
+    for (const channel of channels) {
+      
+      const searchResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(channel)}&maxResults=10&key=${process.env.YOUTUBE_API_KEY}`,
+      );
+      const searchData = await searchResponse.json();
+
+      if (!searchData.items || searchData.items.length === 0) {
+        console.warn(`No data found for channel: ${channel}`);
+        continue;
+      }
+
+      const channelId = searchData.items[0].id.channelId;
+
+    
+      const statsResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`,
+      );
+      const statsData = await statsResponse.json();
+
+      if (!statsData.items || statsData.items.length === 0) {
+        console.warn(`No stats found for channel ID: ${channelId}`);
+        continue;
+      }
+
+      const channelStats = statsData.items[0];
+      stats.push({
+        nameChannel: channelStats.snippet.title,
+        channelId: channelStats.id,
+        subscriberCount: channelStats.statistics.subscriberCount || "0",
+        description: channelStats.snippet.description,
+        thumbnailUrl: channelStats.snippet.thumbnails.default.url,
+        bannerUrl: channelStats.snippet.thumbnails.default.url || null,
+      });
+    }
+    return stats;
+  } catch (error) {
+    console.error("Error fetching channel stats:", error);
+    throw error;
   }
 };

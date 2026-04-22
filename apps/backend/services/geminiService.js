@@ -1,4 +1,5 @@
 import ai from '../config/gemini.js';
+import { channelsStats } from './youtubeService.js';
 
 export const organizeChannel = async (searchResponse) => {
   try {
@@ -15,9 +16,7 @@ export const organizeChannel = async (searchResponse) => {
     const result = await model.generateContent(prompt);
 
     const structuredData = JSON.parse(result.response.text());
-    // console.log(structuredData);
     return structuredData;
-    s;
   } catch (error) {
     console.error('Error structuring channel:', error);
     throw error;

@@ -1,6 +1,7 @@
 import { tavily } from '@tavily/core';
 import { organizeChannel } from './geminiService.js';
 import dotenv from 'dotenv';
+import { channelsStats } from './youtubeService.js';
 
 dotenv.config();
 
@@ -10,6 +11,8 @@ const tavilyService = tavily({
 
 export const searchChannelsByTheme = async (theme) => {
   try {
+    // const { theme } = req.body;
+    console.log(theme);
     const response = await tavilyService.search(theme, {
       searchDepth: 'advanced',
       maxResults: 10,
@@ -22,15 +25,15 @@ export const searchChannelsByTheme = async (theme) => {
         'freecodecamp.org',
         'dev.to',
         'x.com',
-        'groute-reussite.fr',
         'stackoverflow.blog',
       ],
-        timeRange: 'year',
+        timeRange: "year",
     });
 
     const organizedChannels = await organizeChannel(response);
-    console.log(organizedChannels);
-    // return response;
+    const channels = await channelsStats(organizedChannels);
+    console.log(channels);
+    return channels;
   } catch (error) {
     console.error('Error searching channels:', error);
     throw error;
