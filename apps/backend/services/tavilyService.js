@@ -30,7 +30,7 @@ export const searchChannelsByTheme = async (theme) => {
         timeRange: "year",
     });
 
-    const organizedChannels = await organizeChannel(response);
+    const organizedChannels = await organizeChannel(response, theme);
     const channels = await channelsStats(organizedChannels);
     console.log(channels);
     return channels;
