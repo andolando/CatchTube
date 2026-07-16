@@ -29,6 +29,7 @@ import {
 
 import { useQuery } from "@tanstack/react-query"
 import { getUser } from "@/api/auth"
+import { useAuth } from "@/hooks/useAuth"
 
 // This is sample data
 const data = {
@@ -159,10 +160,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { setOpen } = useSidebar()
 
   // get user data from backend using react query
-  const { data: userData, isLoading } = useQuery({
-    queryKey: ["user"],
-    queryFn: getUser,
-  })
+  // const { data: userData, isLoading } = useQuery({
+  //   queryKey: ["user"],
+  //   queryFn: getUser,
+  // })
+
+  const { user: userData, isLoading } = useAuth()
 
   return (
     <Sidebar

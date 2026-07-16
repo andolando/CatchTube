@@ -22,10 +22,11 @@ import {
   BellIcon,
   LogOutIcon,
 } from "lucide-react"
-import type { User } from "@/types"
 import { useMutation } from "@tanstack/react-query"
-import { logout } from "@/api/auth"
 import { useNavigate } from "@tanstack/react-router"
+import { toast } from "sonner"
+
+import { signOut } from "@/lib/auth-client"
 
 export function NavUser({
   user,
@@ -33,7 +34,7 @@ export function NavUser({
   user: {
     name: string
     email: string
-    avatarUrl: string
+    image: string
   }
 }) {
   const { isMobile } = useSidebar()
@@ -41,9 +42,16 @@ export function NavUser({
   const navigate = useNavigate()
 
   const logoutMutation = useMutation({
-    mutationFn: logout,
+    mutationFn: async () => {
+      const { error } = await signOut()
+      if (error) throw new Error(error.message)
+    },
     onSuccess: () => {
+      toast.success("You have been logged out")
       navigate({ to: "/auth" })
+    },
+    onError: (err) => {
+      toast.error(err.message)
     },
   })
 
@@ -61,7 +69,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground md:h-8 md:p-0"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.avatarUrl} alt={user?.name} />
+                <AvatarImage src={user?.image} alt={user?.name} />
                 <AvatarFallback className="rounded-lg">{`${user?.name?.charAt(0) || "C"}${user?.name?.split(" ")[1]?.charAt(0) || "N"}`}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -80,7 +88,7 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.avatarUrl} alt={user?.name} />
+                  <AvatarImage src={user?.image} alt={user?.name} />
                   <AvatarFallback className="rounded-lg">{`${user?.name?.charAt(0) || "C"}${user?.name?.split(" ")[1]?.charAt(0) || "N"}`}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -98,7 +106,7 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => navigate({ to: "/dashboard/account" })}>
                 <BadgeCheckIcon />
                 Account
               </DropdownMenuItem>

@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as DashboardAccountRouteImport } from './routes/dashboard/account'
+import { Route as AuthVerifyRouteImport } from './routes/auth/verify'
+import { Route as DashboardChannelsIndexRouteImport } from './routes/dashboard/channels/index'
 import { Route as DashboardAnalyticsIndexRouteImport } from './routes/dashboard/analytics/index'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -29,6 +32,21 @@ const AuthIndexRoute = AuthIndexRouteImport.update({
   path: '/auth/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardAccountRoute = DashboardAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const AuthVerifyRoute = AuthVerifyRouteImport.update({
+  id: '/auth/verify',
+  path: '/auth/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardChannelsIndexRoute = DashboardChannelsIndexRouteImport.update({
+  id: '/channels/',
+  path: '/channels/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAnalyticsIndexRoute = DashboardAnalyticsIndexRouteImport.update({
   id: '/analytics/',
   path: '/analytics/',
@@ -38,33 +56,65 @@ const DashboardAnalyticsIndexRoute = DashboardAnalyticsIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/auth/verify': typeof AuthVerifyRoute
+  '/dashboard/account': typeof DashboardAccountRoute
   '/auth/': typeof AuthIndexRoute
   '/dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
+  '/dashboard/channels/': typeof DashboardChannelsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/auth/verify': typeof AuthVerifyRoute
+  '/dashboard/account': typeof DashboardAccountRoute
   '/auth': typeof AuthIndexRoute
   '/dashboard/analytics': typeof DashboardAnalyticsIndexRoute
+  '/dashboard/channels': typeof DashboardChannelsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/auth/verify': typeof AuthVerifyRoute
+  '/dashboard/account': typeof DashboardAccountRoute
   '/auth/': typeof AuthIndexRoute
   '/dashboard/analytics/': typeof DashboardAnalyticsIndexRoute
+  '/dashboard/channels/': typeof DashboardChannelsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/auth/' | '/dashboard/analytics/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/auth/verify'
+    | '/dashboard/account'
+    | '/auth/'
+    | '/dashboard/analytics/'
+    | '/dashboard/channels/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/auth' | '/dashboard/analytics'
-  id: '__root__' | '/' | '/dashboard' | '/auth/' | '/dashboard/analytics/'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/auth/verify'
+    | '/dashboard/account'
+    | '/auth'
+    | '/dashboard/analytics'
+    | '/dashboard/channels'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/auth/verify'
+    | '/dashboard/account'
+    | '/auth/'
+    | '/dashboard/analytics/'
+    | '/dashboard/channels/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  AuthVerifyRoute: typeof AuthVerifyRoute
   AuthIndexRoute: typeof AuthIndexRoute
 }
 
@@ -91,6 +141,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/account': {
+      id: '/dashboard/account'
+      path: '/account'
+      fullPath: '/dashboard/account'
+      preLoaderRoute: typeof DashboardAccountRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/auth/verify': {
+      id: '/auth/verify'
+      path: '/auth/verify'
+      fullPath: '/auth/verify'
+      preLoaderRoute: typeof AuthVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/channels/': {
+      id: '/dashboard/channels/'
+      path: '/channels'
+      fullPath: '/dashboard/channels/'
+      preLoaderRoute: typeof DashboardChannelsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/analytics/': {
       id: '/dashboard/analytics/'
       path: '/analytics'
@@ -102,11 +173,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
+  DashboardAccountRoute: typeof DashboardAccountRoute
   DashboardAnalyticsIndexRoute: typeof DashboardAnalyticsIndexRoute
+  DashboardChannelsIndexRoute: typeof DashboardChannelsIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAccountRoute: DashboardAccountRoute,
   DashboardAnalyticsIndexRoute: DashboardAnalyticsIndexRoute,
+  DashboardChannelsIndexRoute: DashboardChannelsIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -116,6 +191,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  AuthVerifyRoute: AuthVerifyRoute,
   AuthIndexRoute: AuthIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -3,6 +3,15 @@ type User = {
   name: string;
   email: string;
   avatarUrl: string;
-};
+}
 
-export type { User };
+type Channel = {
+  nameChannel: string
+  channelId: string
+  subscriberCount: number
+  description: string
+  thumbnailUrl: string
+  bannerUrl: string | null
+}
+
+export type { User, Channel }

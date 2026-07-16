@@ -4,7 +4,6 @@ import {
   HeadContent,
   createRootRouteWithContext,
   Outlet,
-  Link,
 } from "@tanstack/react-router"
 // import {TanStackRouterDevtools} from "@tanstack/react-query-devtools"
 
@@ -15,6 +14,7 @@ type RouterContext = {
   auth: {
     user: User | null
     isLoading: boolean
+    isAuthenticated: boolean
   }
 }
 
@@ -46,4 +46,3 @@ function RootLayout() {
     </div>
   )
 }
-

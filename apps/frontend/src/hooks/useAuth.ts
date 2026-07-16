@@ -1,13 +1,14 @@
-import { getUser } from "@/api/auth";
-import { useQuery } from "@tanstack/react-query";
+import { useSession } from "@/lib/auth-client"
+import type { User } from "@/types"
 
 export const useAuth = () => {
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ["auth", "user"],
-    queryFn: getUser,
-    retry: false,
-    staleTime: Infinity,
-  });
-   return { user: user ?? null, isLoading, error };
-};
+  const { data, isPending, error } = useSession()
+  const user = (data?.user ?? null) as User | null
 
+  return {
+    user,
+    isLoading: isPending,
+    isAuthenticated: Boolean(user),
+    error,
+  }
+}

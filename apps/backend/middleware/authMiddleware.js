@@ -1,9 +1,17 @@
-export const protect = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({
-    error: 'Non authentifié',
-    message: 'Vous devez être connecté pour accéder à cette ressource',
+import { fromNodeHeaders } from "better-auth/node";
+import { auth } from "../lib/auth.js";
+
+export const protect = async (req, res, next) => {
+  const session = await auth.api.getSession({
+    headers: fromNodeHeaders(req.headers),
   });
+
+  if (!session) {
+    return res.status(401).json({ error: "Non authentifié" });
+  }
+
+  req.user = session.user;
+  req.session = session.session;
+
+  next()
 };

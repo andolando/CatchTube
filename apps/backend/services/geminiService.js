@@ -4,7 +4,7 @@ import { channelsStats } from './youtubeService.js';
 export const organizeChannel = async (searchResponse,theme) => {
   try {
     const model = ai.getGenerativeModel({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.5-flash',
       generationConfig: {
         responseMimeType: 'application/json',
       },
